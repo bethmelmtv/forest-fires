@@ -3,22 +3,22 @@ require('dotenv').config();
 
 exports.handler = async (event) => {
   try {
+    const gecodingResponse = await fetch(``);
+
     const response = await fetch(
-      `
-    https://api.ambeedata.com/latest/fire?lat=${event.queryStringParameters.searchFilter}`,
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.FOREST_KEY}`,
-        },
-      }
+      `http://api.openweathermap.org/geo/1.0/direct?q=${event.queryStringParameters.searchFilter}&appid=${process.env.WEATHER_KEY}`
     );
 
-    const data = await response.json();
-    const json = JSON.stringify({ data });
+    const [{ lat, lon }] = await response.json();
+
+    const fireResponse = await fetch(`
+      https://api.ambeedata.com/latest/fire?lat=${lat}&lng=${lon}`);
+
+    const fireData = await fireResponse.json();
 
     return {
       statusCode: 200,
-      body: json,
+      body: JSON.stringify(fireData),
     };
   } catch (error) {
     return {
